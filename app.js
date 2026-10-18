@@ -28,6 +28,14 @@ const BLIGHT_BOSSES = {
   LordMildew: 8,
   Error404: 8,
   NanaRot: 8,
+  AncientSentinel: 10,
+  CryptLord: 10,
+  MotherBlight: 10,
+  Underlord: 10,
+  Chonkus: 10,
+  Honklord: 10,
+  JustARock: 10,
+  ToddFromAccounting: 10,
 };
 const PLUS_STEP = 0.08;
 const PERCENT_PLUS_STEP = 0.02;
