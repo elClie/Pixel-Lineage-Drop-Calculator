@@ -111,8 +111,8 @@ function blightLevel(item) {
   return 8;
 }
 
-function blightScaleFor(item) {
-  return BLIGHT_SCALE[blightLevel(item) - 6] || 1.42;
+function blightScaleFor() {
+  return BLIGHT_10;
 }
 
 function dungeonScale(item, land, stat) {
@@ -611,9 +611,9 @@ function render() {
   const relic = isRelic(item);
   document.getElementById("tormentField").hidden = relic;
   document.getElementById("blightField").hidden = !relic;
-  const blightLevelNow = relic ? blightLevel(item) : 0;
-  const blight = relic && document.getElementById("blight").checked ? blightScaleFor(item) : 0;
-  document.getElementById("blightNote").textContent = relic ? "×" + blightScaleFor(item).toFixed(2) : "";
+  const blight = relic && document.getElementById("blight").checked ? blightScaleFor() : 0;
+  document.getElementById("blightNote").textContent = relic ? "×" + blightScaleFor().toFixed(2) : "";
+  document.getElementById("blightDisclaimer").hidden = !(blight > 1);
   const torment = relic ? 0 : Math.max(0, Math.floor(num("torment")));
   const land = Math.min(10, Math.max(1, Math.floor(num("land"))));
   const plus = Math.min(MAX_PLUS, Math.max(0, Math.floor(num("forge"))));
@@ -628,7 +628,7 @@ function render() {
     item.dungeon ? item.dungeon + " " + item.dungeonTier : "",
     item.class ? "class " + item.class : "",
     plus > 0 ? "forge +" + plus : "",
-    blight > 1 ? "blightforged ×" + blight.toFixed(2) + " (level " + blightLevelNow + ")" : "",
+    blight > 1 ? "blightforged ×" + blight.toFixed(2) : "",
     torment > 0 ? "torment ×" + tormentScale(torment).toFixed(2) : "",
   ].filter(Boolean).join(" · ");
 
