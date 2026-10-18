@@ -22,7 +22,8 @@
 
   <div class="fields">
     <label>Forge <input id="forge" type="number" min="0" max="10" value="0"></label>
-    <label>Torment <input id="torment" type="number" min="0" max="9999" value="0"></label>
+    <label id="tormentField">Torment <input id="torment" type="number" min="0" max="9999" value="0"></label>
+    <label id="blightField" hidden>Blightforged <input id="blight" type="checkbox"> <span id="blightNote"></span></label>
     <label>Loot % <input id="loot" type="number" min="0" max="100" value="0" step="1"></label>
     <label>Rarity
       <select id="rarity"></select>

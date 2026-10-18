@@ -13,6 +13,22 @@ const RARITY_BASE = {
 
 const RARITIES = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Secret"];
 const BLIGHT_10 = 1.7;
+const BLIGHT_SCALE = [1.2, 1.3, 1.42, 1.55, 1.7];
+const BLIGHT_BOSSES = {
+  RotShepherd: 6,
+  Sporeking: 6,
+  TollingBell: 7,
+  TheDeacon: 7,
+  GlassWyrm: 8,
+  Shatterback: 8,
+  FallenStar: 9,
+  Stormcaller: 9,
+  HollowLight: 10,
+  BlightColossus: 10,
+  LordMildew: 8,
+  Error404: 8,
+  NanaRot: 8,
+};
 const PLUS_STEP = 0.08;
 const PERCENT_PLUS_STEP = 0.02;
 const MAX_PLUS = 10;
@@ -73,6 +89,24 @@ function tormentScale(n) {
   return Math.min(0.3, 0.03 * n) + 1;
 }
 
+function isRelic(item) {
+  return item.gearKind === "Relic" && !item.raid;
+}
+
+function blightLevel(item) {
+  const unique = item.unique && typeof item.unique === "object" ? item.unique : null;
+  const nightmare = item.nightmare && typeof item.nightmare === "object" ? item.nightmare : null;
+  if (unique && Number(unique.act) >= 6) return Math.min(10, Math.floor(Number(unique.act)));
+  const boss = (unique && unique.boss) || (nightmare && nightmare.boss);
+  if (boss && BLIGHT_BOSSES[boss]) return BLIGHT_BOSSES[boss];
+  if (Number(item.area) >= 1) return Math.floor(Number(item.area)) + 5;
+  return 8;
+}
+
+function blightScaleFor(item) {
+  return BLIGHT_SCALE[blightLevel(item) - 6] || 1.42;
+}
+
 function dungeonScale(item, land, stat) {
   const gear = catalog.dungeon;
   const index = Math.min(10, Math.max(1, Math.floor(land))) - 1;
@@ -95,7 +129,7 @@ function applyPlus(stat, value, plus, item) {
   return roundStat(stat, value * plusScale(stat, plus, item));
 }
 
-function statRange(item, stat, base, rarity, land, torment, plus) {
+function statRange(item, stat, base, rarity, land, torment, plus, blight) {
   const power = catalog.rarityPower[rarity] || 1;
   const steps = [];
   if (item.dungeon) {
@@ -106,6 +140,12 @@ function statRange(item, stat, base, rarity, land, torment, plus) {
       const t = tormentScale(torment);
       steps.push((v) => v * t, (v) => roundStat(stat, v), (v) => clampCap(stat, v, true));
     }
+  } else if (blight > 1) {
+    steps.push(
+      (v) => roundStat(stat, v),
+      (v) => roundStat(stat, v * blight),
+      (v) => clampCap(stat, v, true)
+    );
   } else if (torment > 0) {
     const t = tormentScale(torment);
     steps.push(
@@ -134,7 +174,7 @@ function suffixLandScale(item, land) {
   return scale * (gear.DifficultyScale[item.dungeonTier] || 1);
 }
 
-function suffixRange(affix, item, rarity, land, torment, plus) {
+function suffixRange(affix, item, rarity, land, torment, plus, blight) {
   const power = catalog.rarityPower[rarity] || 1;
   const tier = Math.max(1, item.tier || 1);
   const factor = 0.8 + power * 0.2;
@@ -142,11 +182,14 @@ function suffixRange(affix, item, rarity, land, torment, plus) {
   const scale = (affix.flat ? tier : 1) * factor * suffixLandScale(item, useLand);
   let low = roundStat(affix.stat, affix.min * scale);
   let high = roundStat(affix.stat, affix.max * scale);
-  if (!item.dungeon && torment > 0) {
+  if (blight > 1) {
+    low = roundStat(affix.stat, low * blight);
+    high = roundStat(affix.stat, high * blight);
+  } else if (!item.dungeon && torment > 0) {
     low = roundStat(affix.stat, low * BLIGHT_10);
     high = roundStat(affix.stat, high * BLIGHT_10);
   }
-  if (torment > 0) {
+  if (torment > 0 && !(blight > 1)) {
     const t = tormentScale(torment);
     low = roundStat(affix.stat, low * t);
     high = roundStat(affix.stat, high * t);
@@ -256,7 +299,7 @@ function uniqueChance(item, act, source, bossOn) {
 
 function dropReport(item) {
   const lines = [];
-  const torment = Math.max(0, Math.floor(num("torment")));
+  const torment = isRelic(item) ? 0 : Math.max(0, Math.floor(num("torment")));
   const act = Math.min(10, Math.max(1, Math.floor(num("land"))));
   const cls = document.getElementById("class").value;
   const source = document.getElementById("source").value;
@@ -557,7 +600,13 @@ function render() {
   const item = selectedItem();
   if (!item) return;
   drawSprite(item);
-  const torment = Math.max(0, Math.floor(num("torment")));
+  const relic = isRelic(item);
+  document.getElementById("tormentField").hidden = relic;
+  document.getElementById("blightField").hidden = !relic;
+  const blightLevelNow = relic ? blightLevel(item) : 0;
+  const blight = relic && document.getElementById("blight").checked ? blightScaleFor(item) : 0;
+  document.getElementById("blightNote").textContent = relic ? "×" + blightScaleFor(item).toFixed(2) : "";
+  const torment = relic ? 0 : Math.max(0, Math.floor(num("torment")));
   const land = Math.min(10, Math.max(1, Math.floor(num("land"))));
   const plus = Math.min(MAX_PLUS, Math.max(0, Math.floor(num("forge"))));
   const rarity = document.getElementById("rarity").value;
@@ -571,6 +620,7 @@ function render() {
     item.dungeon ? item.dungeon + " " + item.dungeonTier : "",
     item.class ? "class " + item.class : "",
     plus > 0 ? "forge +" + plus : "",
+    blight > 1 ? "blightforged ×" + blight.toFixed(2) + " (level " + blightLevelNow + ")" : "",
     torment > 0 ? "torment ×" + tormentScale(torment).toFixed(2) : "",
   ].filter(Boolean).join(" · ");
 
@@ -606,7 +656,7 @@ function render() {
   const effects = item.effects || {};
   const suffixByStat = {};
   for (const affix of rolled) {
-    const range = suffixRange(affix, item, rarity, land, torment, plus);
+    const range = suffixRange(affix, item, rarity, land, torment, plus, blight);
     const slot = suffixByStat[affix.stat] || { low: 0, high: 0, names: [] };
     slot.low += range[0];
     slot.high += range[1];
@@ -618,7 +668,7 @@ function render() {
     const row = document.createElement("tr");
     const cap = catalog.pieceCaps[stat];
     let baseRange = null;
-    if (effects[stat] != null) baseRange = statRange(item, stat, effects[stat], rarity, land, torment, plus);
+    if (effects[stat] != null) baseRange = statRange(item, stat, effects[stat], rarity, land, torment, plus, blight);
     const extra = suffixByStat[stat];
     let finalLow;
     let finalHigh;
@@ -641,7 +691,7 @@ function render() {
     const finalCell = document.createElement("td");
     finalCell.textContent = formatSpan(stat, finalLow, finalHigh);
     row.append(name, defaultCell, suffixCell, finalCell);
-    if (!extra && cap != null && (item.dungeon || torment > 0)) {
+    if (!extra && cap != null && (item.dungeon || torment > 0 || blight > 1)) {
       const capCell = document.createElement("td");
       capCell.textContent = "cap " + formatStat(stat, cap);
       row.append(capCell);
@@ -674,7 +724,7 @@ function render() {
     const list = document.createElement("table");
     for (const [name, p] of rows) {
       const affix = affixByName.get(name);
-      const range = suffixRange(affix, item, rarity, land, torment, plus);
+      const range = suffixRange(affix, item, rarity, land, torment, plus, blight);
       const row = document.createElement("tr");
       row.innerHTML = "<th></th><td></td><td></td>";
       row.children[0].textContent = name;
@@ -695,7 +745,7 @@ function render() {
     for (const name of wanted) {
       const affix = affixByName.get(name);
       if (!affix) continue;
-      const range = suffixRange(affix, item, rarity, land, torment, plus);
+      const range = suffixRange(affix, item, rarity, land, torment, plus, blight);
       const row = document.createElement("tr");
       row.innerHTML = "<th></th><td></td>";
       row.children[0].textContent = name;
@@ -774,7 +824,7 @@ function init() {
     ensureRoll(itemNow, document.getElementById("rarity").value, modeNow, selectedAffixes(), true);
     render();
   });
-  for (const id of ["torment", "loot", "forge", "rarity", "class", "land", "source"]) {
+  for (const id of ["torment", "loot", "forge", "rarity", "class", "land", "source", "blight"]) {
     document.getElementById(id).addEventListener("input", render);
     document.getElementById(id).addEventListener("change", render);
   }
