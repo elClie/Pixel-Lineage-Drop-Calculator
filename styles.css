@@ -1,0 +1,25 @@
+body {
+  font: 14px/1.4 ui-sans-serif, sans-serif;
+  margin: 16px;
+  color: #111;
+  background: #fff;
+}
+h1, h2 { font-size: 16px; margin: 16px 0 8px; }
+h2 button { margin-left: 8px; }
+.note { color: #333; margin-top: 0; }
+.wrap { display: flex; gap: 16px; align-items: flex-start; }
+input, select, button { font: inherit; }
+#search { width: 320px; box-sizing: border-box; }
+#list { width: 320px; margin-top: 6px; }
+#sprite {
+  image-rendering: pixelated;
+  background: #eee;
+  width: 128px;
+  height: 128px;
+}
+.fields label, fieldset label { margin-right: 12px; }
+#affixes { margin-top: 8px; max-width: 720px; }
+#affixes label { display: inline-block; width: 160px; }
+table { border-collapse: collapse; }
+td, th { text-align: left; padding: 2px 10px 2px 0; vertical-align: top; }
+.zero { color: #666; }

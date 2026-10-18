@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Item odds</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h1>Item odds</h1>
+  <p class="note">Loot% changes the chance a drop happens. It does not change the suffix roll.</p>
+
+  <div class="wrap">
+    <div>
+      <input id="search" type="search" placeholder="Find an item" autocomplete="off">
+      <select id="list" size="16"></select>
+    </div>
+    <div>
+      <canvas id="sprite" width="16" height="16"></canvas>
+      <div id="meta"></div>
+    </div>
+  </div>
+
+  <div class="fields">
+    <label>Forge <input id="forge" type="number" min="0" max="10" value="0"></label>
+    <label>Torment <input id="torment" type="number" min="0" max="9999" value="0"></label>
+    <label>Loot % <input id="loot" type="number" min="0" max="100" value="0" step="1"></label>
+    <label>Rarity
+      <select id="rarity"></select>
+    </label>
+    <label>Class
+      <select id="class"></select>
+    </label>
+    <label>Land
+      <input id="land" type="number" min="1" max="10" value="4">
+    </label>
+    <label>Drop from
+      <select id="source">
+        <option value="fight">fight</option>
+        <option value="elite">elite</option>
+        <option value="boss">boss</option>
+        <option value="treasure">treasure</option>
+      </select>
+    </label>
+  </div>
+
+  <fieldset>
+    <legend>Suffixes</legend>
+    <label><input type="radio" name="mode" value="random" checked> random</label>
+    <label><input type="radio" name="mode" value="atleast"> at least these</label>
+    <label><input type="radio" name="mode" value="exact"> this exact set</label>
+    <div id="affixes"></div>
+  </fieldset>
+
+  <h2>Drop</h2>
+  <div id="drop"></div>
+  <h2>Default stats <button type="button" id="reroll">Reroll suffixes</button></h2>
+  <div id="stats"></div>
+  <h2>Suffix odds</h2>
+  <div id="suffix"></div>
+
+  <script src="catalog.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
