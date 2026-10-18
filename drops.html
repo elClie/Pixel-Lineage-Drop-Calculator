@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Drop rates</title>
+  <link rel="stylesheet" href="drops.css">
+</head>
+<body>
+  <h1>Drop rates</h1>
+  <p class="note">Every catalog item. Loot% multiplies a listed chance, up to 100%. It does not change which piece is picked once gear starts dropping. <a href="index.html">Gear stats</a></p>
+
+  <div class="fields">
+    <label>Find <input id="search" type="search" placeholder="Name or id" autocomplete="off"></label>
+    <label>Category <select id="category"></select></label>
+    <label>From
+      <select id="source">
+        <option value="any">any</option>
+        <option value="fight">fight</option>
+        <option value="elite">elite</option>
+        <option value="miniboss">miniboss</option>
+        <option value="boss">boss</option>
+        <option value="secret">secret</option>
+        <option value="treasure">treasure</option>
+      </select>
+    </label>
+    <label>Difficulty <select id="difficulty"></select></label>
+    <label id="classField" class="pick">Class <select id="class"></select> <span>Please choose this</span></label>
+    <label>Loot % <input id="loot" type="number" min="0" max="100" value="0" step="1"></label>
+    <label>Torment <input id="torment" type="checkbox"></label>
+    <label>Drops only <input id="dropsOnly" type="checkbox"></label>
+  </div>
+
+  <div class="wrap">
+    <select id="list" size="22"></select>
+    <div>
+      <div id="meta"></div>
+      <div id="rows"></div>
+    </div>
+  </div>
+
+  <script src="drops-data.js"></script>
+  <script src="drops.js"></script>
+</body>
+</html>

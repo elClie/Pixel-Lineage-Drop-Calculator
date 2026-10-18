@@ -1,0 +1,21 @@
+body {
+  font: 14px/1.4 ui-sans-serif, sans-serif;
+  margin: 16px;
+  color: #111;
+  background: #fff;
+}
+h1 { font-size: 16px; margin: 0 0 8px; }
+.note { margin-top: 0; max-width: 760px; }
+.fields label { margin: 0 12px 8px 0; display: inline-block; }
+label.pick { background: #fff3bf; border: 1px solid #e6b800; padding: 2px 8px; font-weight: 600; }
+label.pick span { color: #8a5a00; margin-left: 6px; }
+input, select, button { font: inherit; }
+#search { width: 180px; }
+.wrap { display: flex; gap: 16px; align-items: flex-start; }
+#list { width: 320px; }
+#meta { margin-bottom: 8px; max-width: 640px; }
+.disclaimer { max-width: 520px; margin: 0 0 10px; font-size: 12px; color: #666; }
+table { border-collapse: collapse; }
+td, th { text-align: left; padding: 2px 12px 2px 0; vertical-align: top; }
+th { font-weight: 600; }
+th.group { padding-top: 12px; color: #444; }
