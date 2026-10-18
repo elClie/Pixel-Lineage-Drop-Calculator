@@ -587,8 +587,22 @@ function render() {
   }
   drop.append(table);
 
+  const affixBox = document.getElementById("affixes");
+  affixBox.classList.toggle("locked", mode === "random");
+  for (const input of affixBox.querySelectorAll("input")) {
+    input.disabled = mode === "random" || input.parentElement.classList.contains("zero");
+  }
+
   const stats = document.getElementById("stats");
   const statTable = document.createElement("table");
+  statTable.className = "stats";
+  const statHead = document.createElement("tr");
+  for (const title of ["", "Default stat", "Suffix", "Final"]) {
+    const cell = document.createElement("th");
+    cell.textContent = title;
+    statHead.append(cell);
+  }
+  statTable.append(statHead);
   const effects = item.effects || {};
   const suffixByStat = {};
   for (const affix of rolled) {
@@ -603,23 +617,35 @@ function render() {
   for (const stat of keys) {
     const row = document.createElement("tr");
     const cap = catalog.pieceCaps[stat];
-    let text = "";
     let baseRange = null;
-    if (effects[stat] != null) {
-      baseRange = statRange(item, stat, effects[stat], rarity, land, torment, plus);
-      text = formatSpan(stat, baseRange[0], baseRange[1]);
-    }
+    if (effects[stat] != null) baseRange = statRange(item, stat, effects[stat], rarity, land, torment, plus);
     const extra = suffixByStat[stat];
-    if (extra) {
-      text += (text ? " + " : "+ ") + formatSpan(stat, extra.low, extra.high);
-      if (baseRange) text += " = " + formatSpan(stat, baseRange[0] + extra.low, baseRange[1] + extra.high);
+    let finalLow;
+    let finalHigh;
+    if (baseRange && extra) {
+      finalLow = baseRange[0] + extra.low;
+      finalHigh = baseRange[1] + extra.high;
+    } else if (baseRange) {
+      finalLow = baseRange[0];
+      finalHigh = baseRange[1];
+    } else {
+      finalLow = extra.low;
+      finalHigh = extra.high;
     }
-    row.innerHTML = "<th></th><td></td><td></td>";
-    row.children[0].textContent = catalog.statLabels[stat] || stat;
-    row.children[1].textContent = text;
-    row.children[2].textContent = extra
-      ? extra.names.join(", ")
-      : cap != null && (item.dungeon || torment > 0) ? "cap " + formatStat(stat, cap) : "";
+    const name = document.createElement("th");
+    name.textContent = catalog.statLabels[stat] || stat;
+    const defaultCell = document.createElement("td");
+    defaultCell.textContent = baseRange ? formatSpan(stat, baseRange[0], baseRange[1]) : "—";
+    const suffixCell = document.createElement("td");
+    suffixCell.textContent = extra ? "+" + formatSpan(stat, extra.low, extra.high) + "  " + extra.names.join(", ") : "—";
+    const finalCell = document.createElement("td");
+    finalCell.textContent = formatSpan(stat, finalLow, finalHigh);
+    row.append(name, defaultCell, suffixCell, finalCell);
+    if (!extra && cap != null && (item.dungeon || torment > 0)) {
+      const capCell = document.createElement("td");
+      capCell.textContent = "cap " + formatStat(stat, cap);
+      row.append(capCell);
+    }
     statTable.append(row);
   }
   stats.innerHTML = "";

@@ -20,6 +20,9 @@ input, select, button { font: inherit; }
 .fields label, fieldset label { margin-right: 12px; }
 #affixes { margin-top: 8px; max-width: 720px; }
 #affixes label { display: inline-block; width: 160px; }
+#affixes.locked { color: #888; }
 table { border-collapse: collapse; }
 td, th { text-align: left; padding: 2px 10px 2px 0; vertical-align: top; }
+.stats td, .stats th { font-variant-numeric: tabular-nums; padding-right: 28px; }
+.stats tr:first-child th { color: #444; font-weight: 600; }
 .zero { color: #666; }
