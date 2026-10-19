@@ -7,7 +7,7 @@ data.items.push({
   droppable: true,
   note: "The enemy potion roll. The catalog has no item with this name.",
 });
-data.items.sort((a, b) => a.name < b.name ? -1 : 1);
+data.items.sort((a, b) => (a.fresh ? 0 : 1) - (b.fresh ? 0 : 1) || (a.name < b.name ? -1 : 1));
 const byId = new Map(data.items.map((item) => [item.id, item]));
 const enemyById = new Map(data.enemies.map((enemy) => [enemy.id, enemy]));
 
@@ -391,12 +391,13 @@ function renderList() {
   list.innerHTML = "";
   for (const item of data.items) {
     if (category && item.category !== category) continue;
-    if (q && !item.name.toLowerCase().includes(q) && !item.id.toLowerCase().includes(q)) continue;
+    const label = item.name + " " + item.id + (item.fresh ? " new" : "");
+    if (q && !label.toLowerCase().includes(q)) continue;
     const chance = bestChance(item);
     if (dropsOnly && !(chance > 0)) continue;
     const option = document.createElement("option");
     option.value = item.id;
-    option.textContent = item.name + (chance > 0 ? "  " + fmt(chance) : "");
+    option.textContent = item.name + (item.fresh ? "  new" : "") + (chance > 0 ? "  " + fmt(chance) : "");
     list.append(option);
   }
   if ([...list.options].some((option) => option.value === current)) list.value = current;
@@ -412,7 +413,7 @@ function renderDetail() {
     meta.textContent = "";
     return;
   }
-  meta.textContent = [item.name, item.rarity, item.category, item.gearKind, item.id].filter(Boolean).join(" · ");
+  meta.textContent = [item.fresh ? item.name + "  new" : item.name, item.rarity, item.category, item.gearKind, item.id].filter(Boolean).join(" · ");
   if (item.note) {
     const note = document.createElement("p");
     note.textContent = item.note;

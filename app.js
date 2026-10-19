@@ -582,11 +582,13 @@ function renderList() {
   const q = document.getElementById("search").value.trim().toLowerCase();
   const current = list.value;
   list.innerHTML = "";
-  for (const item of catalog.items) {
-    if (q && !item.name.toLowerCase().includes(q) && !item.id.toLowerCase().includes(q)) continue;
+  const items = catalog.items.slice().sort((a, b) => (a.fresh ? 0 : 1) - (b.fresh ? 0 : 1) || (a.name < b.name ? -1 : 1));
+  for (const item of items) {
+    const label = item.name + " " + item.id + (item.fresh ? " new" : "");
+    if (q && !label.toLowerCase().includes(q)) continue;
     const option = document.createElement("option");
     option.value = item.id;
-    option.textContent = item.name;
+    option.textContent = item.fresh ? item.name + "  new" : item.name;
     list.append(option);
   }
   if ([...list.options].some((option) => option.value === current)) {
@@ -623,7 +625,7 @@ function render() {
   ensureRoll(item, rarity, mode, wanted, false);
   const meta = document.getElementById("meta");
   meta.textContent = [
-    item.name,
+    item.fresh ? item.name + "  new" : item.name,
     item.rarity + " " + item.gearKind + ", tier " + item.tier,
     item.dungeon ? item.dungeon + " " + item.dungeonTier : "",
     item.class ? "class " + item.class : "",
