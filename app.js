@@ -560,7 +560,8 @@ function fillAffixes(item) {
   const previous = new Set(selectedAffixes());
   const weights = catalog.weights[item.gearKind] || {};
   box.innerHTML = "";
-  for (const affix of catalog.affixes) {
+  const affixes = catalog.affixes.slice().sort((a, b) => a.name.localeCompare(b.name));
+  for (const affix of affixes) {
     const weight = weights[affix.group] || 0;
     const label = document.createElement("label");
     label.className = weight > 0 ? "" : "zero";
