@@ -476,12 +476,11 @@ function suffixOdds(item, rarity, mode, wanted) {
 
   function finish(prob, names) {
     total += prob;
+    for (const name of names) appear[name] = (appear[name] || 0) + prob;
     if (mode === "exact") {
       if (names.length === wanted.length && wanted.every((name) => names.includes(name))) hit += prob;
     } else if (mode === "atleast") {
       if (wanted.every((name) => names.includes(name))) hit += prob;
-    } else {
-      for (const name of names) appear[name] = (appear[name] || 0) + prob;
     }
   }
 
@@ -517,9 +516,7 @@ function suffixOdds(item, rarity, mode, wanted) {
     return { n, total: 1, hit: mode === "random" ? {} : wanted.length ? 0 : 1, appear: {}, pool };
   }
   walk({}, [], 1, n);
-  if (mode === "random") {
-    for (const name of Object.keys(appear)) appear[name] /= total || 1;
-  }
+  for (const name of Object.keys(appear)) appear[name] /= total || 1;
   return { n, total, hit: hit / (total || 1), appear, pool };
 }
 
@@ -727,23 +724,7 @@ function render() {
     ? "This rarity rolls no suffixes."
     : rarity + " rolls " + odds.n + " suffix" + (odds.n === 1 ? "" : "es") + ". Same stat cannot roll twice. A legendary power is extra and is not one of these.";
   suffix.append(head);
-  if (mode === "random") {
-    const rows = odds.pool
-      .map((affix) => [affix.name, odds.appear[affix.name] || 0])
-      .sort((a, b) => b[1] - a[1]);
-    const list = document.createElement("table");
-    for (const [name, p] of rows) {
-      const affix = affixByName.get(name);
-      const range = suffixRange(affix, item, rarity, land, torment, plus, blight);
-      const row = document.createElement("tr");
-      row.innerHTML = "<th></th><td></td><td></td>";
-      row.children[0].textContent = name;
-      row.children[1].textContent = (catalog.statLabels[affix.stat] || affix.stat) + " +" + formatSpan(affix.stat, range[0], range[1]);
-      row.children[2].textContent = fmt(p);
-      list.append(row);
-    }
-    suffix.append(list);
-  } else {
+  if (mode !== "random") {
     const line = document.createElement("p");
     const shared = sharedStat(wanted);
     if (!wanted.length) line.textContent = "Check at least one suffix.";
@@ -751,19 +732,23 @@ function render() {
     else if (mode === "exact" && wanted.length !== odds.n) line.textContent = "An exact set has to be " + odds.n + " suffixes. This is " + wanted.length + ".";
     else line.textContent = (mode === "exact" ? "Exactly " : "At least ") + wanted.join(" + ") + ": " + fmt(odds.hit);
     suffix.append(line);
-    const detail = document.createElement("table");
-    for (const name of wanted) {
-      const affix = affixByName.get(name);
-      if (!affix) continue;
-      const range = suffixRange(affix, item, rarity, land, torment, plus, blight);
-      const row = document.createElement("tr");
-      row.innerHTML = "<th></th><td></td>";
-      row.children[0].textContent = name;
-      row.children[1].textContent = (catalog.statLabels[affix.stat] || affix.stat) + " +" + formatSpan(affix.stat, range[0], range[1]);
-      detail.append(row);
-    }
-    suffix.append(detail);
   }
+  const rows = odds.pool
+    .map((affix) => [affix.name, odds.appear[affix.name] || 0])
+    .sort((a, b) => b[1] - a[1]);
+  const list = document.createElement("table");
+  for (const [name, p] of rows) {
+    const affix = affixByName.get(name);
+    const range = suffixRange(affix, item, rarity, land, torment, plus, blight);
+    const row = document.createElement("tr");
+    row.innerHTML = "<th></th><td></td><td></td>";
+    if (wanted.includes(name)) row.className = "picked";
+    row.children[0].textContent = name;
+    row.children[1].textContent = (catalog.statLabels[affix.stat] || affix.stat) + " +" + formatSpan(affix.stat, range[0], range[1]);
+    row.children[2].textContent = fmt(p);
+    list.append(row);
+  }
+  suffix.append(list);
 }
 
 function sharedStat(names) {
